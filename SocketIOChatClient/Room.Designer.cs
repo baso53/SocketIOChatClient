@@ -120,7 +120,7 @@
             this.tableLayoutPanel1.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
             this.tableLayoutPanel1.ColumnCount = 2;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 160F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 164F));
             this.tableLayoutPanel1.Controls.Add(this.inputTextBox, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.sendButton, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.panel2, 1, 0);
@@ -142,8 +142,9 @@
             this.inputTextBox.ForeColor = System.Drawing.SystemColors.MenuBar;
             this.inputTextBox.Location = new System.Drawing.Point(1, 394);
             this.inputTextBox.Margin = new System.Windows.Forms.Padding(0);
+            this.inputTextBox.MaxLength = 510;
             this.inputTextBox.Name = "inputTextBox";
-            this.inputTextBox.Size = new System.Drawing.Size(472, 20);
+            this.inputTextBox.Size = new System.Drawing.Size(468, 20);
             this.inputTextBox.TabIndex = 0;
             this.inputTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.inputTextBox_KeyDown);
             // 
@@ -155,10 +156,10 @@
             this.sendButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.sendButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.sendButton.ForeColor = System.Drawing.SystemColors.MenuBar;
-            this.sendButton.Location = new System.Drawing.Point(474, 394);
+            this.sendButton.Location = new System.Drawing.Point(470, 394);
             this.sendButton.Margin = new System.Windows.Forms.Padding(0);
             this.sendButton.Name = "sendButton";
-            this.sendButton.Size = new System.Drawing.Size(160, 20);
+            this.sendButton.Size = new System.Drawing.Size(164, 20);
             this.sendButton.TabIndex = 1;
             this.sendButton.Text = "Send";
             this.sendButton.UseVisualStyleBackColor = false;
@@ -170,10 +171,10 @@
             this.panel2.Controls.Add(this.userListView);
             this.panel2.Controls.Add(this.label2);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel2.Location = new System.Drawing.Point(479, 6);
+            this.panel2.Location = new System.Drawing.Point(475, 6);
             this.panel2.Margin = new System.Windows.Forms.Padding(5);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(150, 382);
+            this.panel2.Size = new System.Drawing.Size(154, 382);
             this.panel2.TabIndex = 2;
             // 
             // userListView
@@ -192,7 +193,7 @@
             this.userListView.Size = new System.Drawing.Size(125, 357);
             this.userListView.TabIndex = 1;
             this.userListView.UseCompatibleStateImageBehavior = false;
-            this.userListView.View = System.Windows.Forms.View.List;
+            this.userListView.View = System.Windows.Forms.View.SmallIcon;
             // 
             // Users
             // 
@@ -226,7 +227,7 @@
             this.messagesTextBox.Name = "messagesTextBox";
             this.messagesTextBox.ReadOnly = true;
             this.messagesTextBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.messagesTextBox.Size = new System.Drawing.Size(462, 382);
+            this.messagesTextBox.Size = new System.Drawing.Size(458, 382);
             this.messagesTextBox.TabIndex = 3;
             this.messagesTextBox.Text = "";
             // 

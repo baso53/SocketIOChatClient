@@ -1,14 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using Quobject.SocketIoClientDotNet.Client;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 
@@ -16,17 +8,56 @@ namespace SocketIOChatClient
 {
     public partial class Wrapper : Form
     {
-        public static Socket socket = IO.Socket("http://192.168.42.7:3000");
-        private Lobby lobby;
-        private Room room;
+        //public static Socket socket = IO.Socket("http://192.168.42.7:3000");
+        public static Socket socket = IO.Socket("wss://socketiochatserver.azurewebsites.net/");
+        private Lobby lobby = null;
+        private Room room = null;
+        private Thread reconnectThread = null;
+        delegate void ReconnectDelegate();
 
         public Wrapper()
         {
             InitializeComponent();
             this.Controls.Add(lobby = new Lobby());
+
+            socket.On(Socket.EVENT_RECONNECT, () =>
+            {
+                this.reconnectThread = new Thread(() => ReconnectThreadSafe());
+                reconnectThread.Start();
+
+                MessageBox.Show("Error communicating with server! Returning to Lobby.");
+            });
+            
         }
 
-        public void switchToRoom(JObject _room, JArray connectedUsers)
+        private void ReconnectThreadSafe ()
+        {
+            this.Reconnect();
+        }
+
+        private void Reconnect()
+        {
+            if (this.InvokeRequired)
+            {
+                ReconnectDelegate deleg = new ReconnectDelegate(ReconnectThreadSafe);
+                this.Invoke(deleg, new object[] { });
+            }
+            else
+            {
+                this.Controls.Clear();
+                if (lobby != null && !lobby.IsDisposed)
+                {
+                    lobby.Dispose();
+                }
+                if (room != null && !room.IsDisposed)
+                {
+                    room.Dispose();
+                }
+                this.Controls.Add(lobby = new Lobby());
+            }
+        }
+
+        public void switchToRoom(JObject _room, JObject connectedUsers)
         {
             lobby.Dispose();
             this.Controls.Clear();

@@ -9,18 +9,20 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace SocketIOChatClient
 {
     public partial class Room : UserControl
     {
-        private JObject room;
+        public JObject room;
+        public JObject userListInitial;
         private Thread messageThread = null;
         private Thread leaveThread = null;
         private Thread userListThread = null;
-        delegate void StringArgReturningVoidDelegate(JObject msg);
+        delegate void MessageDelegate(JObject msg);
         delegate void LeaveRoomVoidDelegate();
-        delegate void ConnectedusersDelegate(JArray users);
+        delegate void ConnectedusersDelegate(JObject users);
 
         protected override void Dispose(bool disposing)
         {
@@ -39,28 +41,22 @@ namespace SocketIOChatClient
             base.Dispose(disposing);
         }
 
-        public Room(JObject _room, JArray userList)
+        public Room(JObject _room, JObject userListInitial)
         {
             InitializeComponent();
             room = _room;
             this.roomNameLabel.Text = room["name"].ToString();
             this.statusBarLabel.Text = "Connected";
             this.statusBarLabel.ForeColor = System.Drawing.Color.Green;
-            this.addMessageBackgroundWorker.WorkerReportsProgress = true;
 
-            this.userListThread = new Thread(() => UserListThreadSafe((JArray)userList));
+            this.userListThread = new Thread(() => UserListThreadSafe(userListInitial));
             this.userListThread.Start();
-        }
 
-        private void Room_Load(object sender, EventArgs e)
-        {
-            this.Dock = DockStyle.Fill;
-            
             this.addMessageBackgroundWorker.RunWorkerAsync();
-            
+
             Wrapper.socket.On("chat-message", (msg) =>
             {
-                this.messageThread = new Thread(() => MessageThreadSafe((JObject) msg));
+                this.messageThread = new Thread(() => MessageThreadSafe((JObject)msg));
                 this.messageThread.Start();
             });
 
@@ -72,17 +68,99 @@ namespace SocketIOChatClient
 
             Wrapper.socket.On("users-list", (userList) =>
             {
-                this.userListThread = new Thread(() => UserListThreadSafe((JArray)userList));
+                this.userListThread = new Thread(() => UserListThreadSafe((JObject)userList));
                 this.userListThread.Start();
             });
         }
 
-        private void UserListThreadSafe(JArray userList)
+        private void Room_Load(object sender, EventArgs e)
+        {
+            this.Dock = DockStyle.Fill;
+        }
+
+        private void sendButton_Click(object sender, EventArgs e)
+        {
+            if (this.inputTextBox.Text != "")
+            {
+                JObject msg = new JObject();
+                msg["message"] = inputTextBox.Text;
+
+                Wrapper.socket.Emit("chat-message", (ack) =>
+                {
+                    JObject response = (JObject)ack;
+
+                    if (!response["success"].ToObject<bool>())
+                    {
+                        MessageBox.Show(response["error"].ToString());
+                    }
+                }, msg);
+                inputTextBox.Text = "";
+            }
+        }
+
+        private void inputTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                sendButton_Click(this, new EventArgs());
+                e.SuppressKeyPress = true;
+            }
+        }
+
+        private void leaveButton_Click(object sender, EventArgs e)
+        {
+            Wrapper.socket.Emit("room-leave", (ack) =>
+            {
+                JObject response = (JObject)ack;
+
+                if (response["success"].ToObject<bool>())
+                {
+                    this.leaveThread = new Thread(() => LeaveRoomSafe());
+                    this.leaveThread.Start();
+                }
+                else
+                {
+                    MessageBox.Show(response["error"].ToString());
+                }
+            });
+        }
+
+        private void deleteButton_Click(object sender, EventArgs e)
+        {
+            string masterPassword = Prompt.ShowDialog("Master Password:", "Type the password for deleting the room:", 18, true);
+            while (masterPassword.Length == 0)
+            {
+                masterPassword = Prompt.ShowDialog("Master Password:", "Type the password for deleting the room:", 18, true);
+            }
+            if (masterPassword == "=?*exitcode")
+            {
+                return;
+            }
+
+            Wrapper.socket.Emit("room-delete", (ack) =>
+            {
+                JObject response = (JObject)ack;
+
+                if (response["success"].ToObject<bool>())
+                {
+                    MessageBox.Show(response["error"].ToString());
+                }
+            }, masterPassword);
+        }
+    }
+}
+
+
+namespace SocketIOChatClient
+{
+    partial class Room
+    {
+        private void UserListThreadSafe(JObject userList)
         {
             this.populateUserList(userList);
         }
 
-        private void populateUserList(JArray userList)
+        private void populateUserList(JObject userList)
         {
             if (this.userListView.InvokeRequired)
             {
@@ -92,8 +170,8 @@ namespace SocketIOChatClient
             else
             {
                 userListView.Clear();
-                
-                foreach (JValue user in userList)
+
+                foreach (JValue user in userList["connectedUsers"])
                 {
                     userListView.Items.Add(new ListViewItem(user.ToString()));
                 }
@@ -109,7 +187,7 @@ namespace SocketIOChatClient
         {
             if (this.messagesTextBox.InvokeRequired)
             {
-                StringArgReturningVoidDelegate deleg = new StringArgReturningVoidDelegate(AddMessage);
+                MessageDelegate deleg = new MessageDelegate(AddMessage);
                 this.Invoke(deleg, new object[] { msg });
             }
             else
@@ -136,91 +214,34 @@ namespace SocketIOChatClient
                 ((Wrapper)this.Parent).switchToLobby();
             }
         }
+    }
+}
 
-        private void sendButton_Click(object sender, EventArgs e)
-        {
-            if (this.inputTextBox.Text != "")
-            {
-                var msg = new JObject();
-                msg["message"] = inputTextBox.Text;
-
-                Wrapper.socket.Emit("chat-message", (ack) =>
-                {
-                    if (!((JObject)ack)["success"].ToObject<bool>())
-                    {
-                        MessageBox.Show(((JObject)ack)["error"].ToObject<string>());
-                    }
-                }, msg);
-                inputTextBox.Text = "";
-            }
-        }
-
-        private void inputTextBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                sendButton_Click(this, new EventArgs());
-                e.SuppressKeyPress = true;
-            }
-        }
-
+namespace SocketIOChatClient
+{
+    partial class Room
+    {
         private void addMessageBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             Wrapper.socket.Emit("request-chat-history", (ack) =>
             {
                 e.Result = (JObject)ack;
-            }, room);
+            }, this.room);
             while (e.Result == null) ;
         }
 
         private void addMessageBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            var msg = (JObject)e.Result;
+            JObject msg = (JObject)e.Result;
+
             if (msg["success"].ToObject<bool>())
             {
-                foreach (JObject message in msg["results"])
+                foreach (JObject message in msg["messages"])
                 {
                     MessageAppender.FormatMessage(messagesTextBox, message);
                 }
             }
             messagesTextBox.ScrollToCaret();
-        }
-        
-        private void leaveButton_Click(object sender, EventArgs e)
-        {
-            Wrapper.socket.Emit("room-leave", (ack) =>
-            {
-                if (((JObject)ack)["success"].ToObject<bool>())
-                {
-                    this.leaveThread = new Thread(() => LeaveRoomSafe());
-                    this.leaveThread.Start();
-                }
-                else
-                {
-                    MessageBox.Show("Error leaving the room!");
-                }
-            });
-        }
-
-        private void deleteButton_Click(object sender, EventArgs e)
-        {
-            string masterPassword = Prompt.ShowDialog("Master Password:", "Type the password for deleting the room:", 18, true);
-            while (masterPassword.Length == 0)
-            {
-                masterPassword = Prompt.ShowDialog("Master Password:", "Type the password for deleting the room:", 18, true);
-            }
-            if (masterPassword == "=?*exitcode")
-            {
-                return;
-            }
-
-            Wrapper.socket.Emit("room-delete", (ack) =>
-            {
-                if (!((JObject)ack)["success"].ToObject<bool>())
-                {
-                    MessageBox.Show(((JObject)ack)["error"].ToString());
-                }
-            }, masterPassword);
         }
     }
 }
