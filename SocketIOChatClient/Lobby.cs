@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using System.Threading;
-using Newtonsoft.Json;
 
 namespace SocketIOChatClient
 {
     public partial class Lobby : UserControl
     {
         private Thread roomListThread = null;
+        private Thread switchToRoomThread = null;
         delegate void JObjectDelegate(JObject json);
+        delegate void JObjectTupleDelegate(JObject json1, JObject json2);
 
         protected override void Dispose(bool disposing)
         {
@@ -53,51 +51,7 @@ namespace SocketIOChatClient
         {
             this.Dock = DockStyle.Fill;
         }
-
-        private void RoomListThreadSafe(JObject roomList)
-        {
-            this.PopulateRoomList(roomList);
-        }
-
-        private void PopulateRoomList (JObject response)
-        {
-            if (this.roomListView.InvokeRequired)
-            {
-                JObjectDelegate deleg = new JObjectDelegate(RoomListThreadSafe);
-                this.Invoke(deleg, new object[] { response });
-            }
-            else
-            {
-                if (response["success"].ToObject<bool>())
-                {
-                    this.statusBarLabel.Text = "Connected";
-                    this.statusBarLabel.ForeColor = System.Drawing.Color.Green;
-
-                    roomListView.Items.Clear();
-                    ListViewItem addNewRoomRow = new ListViewItem();
-                    addNewRoomRow.Text = "+";
-                    addNewRoomRow.SubItems.Add("ADD A NEW ROOM");
-                    this.roomListView.Items.Add(addNewRoomRow);
-
-                    foreach (JObject room in response["roomList"])
-                    {
-                        ListViewItem row = new ListViewItem();
-                        row.Text = room["id"].ToString();
-                        row.SubItems.Add(room["name"].ToString());
-                        row.SubItems.Add(room["passwordProtected"].ToString());
-                        row.SubItems.Add(room["numberOfClients"].ToString());
-                        row.Tag = room;
-
-                        this.roomListView.Items.Add(row);
-                    }
-                }
-                else
-                {
-                    MessageBox.Show(response["error"].ToString());
-                }
-            }
-        }
-
+        
         private void roomListView_ItemActivate(object sender, EventArgs e)
         {
             if (this.roomListView.SelectedItems[0].Index == 0)
@@ -142,7 +96,7 @@ namespace SocketIOChatClient
             newRoom["name"] = name;
             newRoom["password"] = password;
             newRoom["masterPassword"] = masterPassword;
-            this.addRoomBackgroundWorker.RunWorkerAsync(newRoom);
+            addRoomHandler(newRoom);
         }
 
         private void logInToRoom()
@@ -175,7 +129,7 @@ namespace SocketIOChatClient
 
             selectedRoom["username"] = username;
             selectedRoom["password"] = password;
-            this.switchToRoomBackgroundWorker.RunWorkerAsync(selectedRoom);
+            switchToRoomHandler(selectedRoom);
         }
     }
 }
@@ -184,55 +138,51 @@ namespace SocketIOChatClient
 {
     partial class Lobby
     {
-        //private void requestRoomListBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
-        //{
-        //    Wrapper.socket.Emit("request-room-list", (ack) =>
-        //    {
-        //        JObject response = (JObject)ack;
+        private void RoomListThreadSafe(JObject roomList)
+        {
+            this.PopulateRoomList(roomList);
+        }
 
-        //        if (response["success"].ToObject<bool>())
-        //        {
-        //            e.Result = response;
-        //        }
-        //        else
-        //        {
-        //            MessageBox.Show(response["error"].ToString());
-        //            e.Result = response;
-        //        }
-        //    });
-        //    while (e.Result == null) ;
-        //}
+        private void PopulateRoomList(JObject response)
+        {
+            if (this.roomListView.InvokeRequired)
+            {
+                JObjectDelegate deleg = new JObjectDelegate(RoomListThreadSafe);
+                this.Invoke(deleg, new object[] { response });
+            }
+            else
+            {
+                if (response["success"].ToObject<bool>())
+                {
+                    this.statusBarLabel.Text = "Connected";
+                    this.statusBarLabel.ForeColor = System.Drawing.Color.Green;
 
-        //private void requestRoomListBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        //{
-        //    JObject response = (JObject)e.Result;
+                    roomListView.Items.Clear();
+                    ListViewItem addNewRoomRow = new ListViewItem();
+                    addNewRoomRow.Text = "+";
+                    addNewRoomRow.SubItems.Add("ADD A NEW ROOM");
+                    this.roomListView.Items.Add(addNewRoomRow);
 
-        //    if (response["success"].ToObject<bool>())
-        //    {
-        //        this.statusBarLabel.Text = "Connected";
-        //        this.statusBarLabel.ForeColor = System.Drawing.Color.Green;
+                    foreach (JObject room in response["roomList"])
+                    {
+                        ListViewItem row = new ListViewItem();
+                        row.Text = room["id"].ToString();
+                        row.SubItems.Add(room["name"].ToString());
+                        row.SubItems.Add(room["passwordProtected"].ToString());
+                        row.SubItems.Add(room["numberOfClients"].ToString());
+                        row.Tag = room;
 
-        //        roomListView.Items.Clear();
-        //        ListViewItem addNewRoomRow = new ListViewItem();
-        //        addNewRoomRow.Text = "+";
-        //        addNewRoomRow.SubItems.Add("ADD A NEW ROOM");
-        //        this.roomListView.Items.Add(addNewRoomRow);
+                        this.roomListView.Items.Add(row);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(response["error"].ToString());
+                }
+            }
+        }
 
-        //        foreach (JObject room in response["roomList"])
-        //        {
-        //            ListViewItem row = new ListViewItem();
-        //            row.Text = room["id"].ToString();
-        //            row.SubItems.Add(room["name"].ToString());
-        //            row.SubItems.Add(room["passwordProtected"].ToString());
-        //            row.SubItems.Add(room["numberOfClients"].ToString());
-        //            row.Tag = room;
-
-        //            this.roomListView.Items.Add(row);
-        //        }
-        //    }
-        //}
-
-        private void addRoomBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void addRoomHandler(JObject room)
         {
             Wrapper.socket.Emit("add-room", (ack) =>
             {
@@ -240,57 +190,53 @@ namespace SocketIOChatClient
 
                 if (response["success"].ToObject<bool>())
                 {
-                    e.Result = true;
+                    Wrapper.socket.Emit("request-room-list", (roomList) =>
+                    {
+                        this.roomListThread = new Thread(() => RoomListThreadSafe((JObject) roomList));
+                        this.roomListThread.Start();
+                    });
                 }
                 else
                 {
                     MessageBox.Show(response["error"].ToString());
-                    e.Result = false;
                 }
-            }, (JObject)e.Argument);
-            while (e.Result == null) ;
+            }, (JObject) room);
         }
 
-        private void addRoomBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void switchToRoomHandler (JObject room)
         {
-            if ((bool)e.Result)
-            {
-                Wrapper.socket.Emit("request-room-list", (roomList) =>
-                {
-                    this.roomListThread = new Thread(() => RoomListThreadSafe((JObject)roomList));
-                    this.roomListThread.Start();
-                });
-            }
-        }
-
-        private void switchToRoomBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            JObject room = (JObject)e.Argument;
-
             Wrapper.socket.Emit("room-select", (ack) =>
             {
                 JObject response = (JObject)ack;
-
+                
                 if (response["success"].ToObject<bool>())
                 {
-                    e.Result = (true, room, response);
+                    room.Property("password").Remove();
+                    this.switchToRoomThread = new Thread(() => SwitchToRoomThreadSafe(room, response));
+                    this.switchToRoomThread.Start();
                 }
                 else
                 {
                     MessageBox.Show(response["error"].ToString());
-                    e.Result = (false, new JObject(), new JObject());
                 }
             }, room);
-            while (e.Result == null) ;
         }
 
-        private void switchToRoomBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void SwitchToRoomThreadSafe (JObject room, JObject connectedUsers)
         {
-            (bool info, JObject room, JObject connectedUsers) result = ((bool, JObject, JObject))e.Result;
-            if (result.info)
+            this.SwitchToRoom(room, connectedUsers);
+        }
+
+        private void SwitchToRoom (JObject room, JObject connectedUsers)
+        {
+            if (this.InvokeRequired)
             {
-                result.room.Property("password").Remove();
-                ((Wrapper)this.Parent).switchToRoom(result.room, result.connectedUsers);
+                JObjectTupleDelegate deleg = new JObjectTupleDelegate(SwitchToRoom);
+                this.Invoke(deleg, new object[] { room, connectedUsers });
+            }
+            else
+            {
+                ((Wrapper) this.Parent).switchToRoom(room, connectedUsers);
             }
         }
     }

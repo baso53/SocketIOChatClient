@@ -1,15 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using System.Threading;
-using Newtonsoft.Json;
 
 namespace SocketIOChatClient
 {
@@ -20,10 +12,11 @@ namespace SocketIOChatClient
         private Thread messageThread = null;
         private Thread leaveThread = null;
         private Thread userListThread = null;
+        private Thread populateMessagesThread = null;
         delegate void MessageDelegate(JObject msg);
         delegate void LeaveRoomVoidDelegate();
         delegate void ConnectedusersDelegate(JObject users);
-
+        
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -52,7 +45,7 @@ namespace SocketIOChatClient
             this.userListThread = new Thread(() => UserListThreadSafe(userListInitial));
             this.userListThread.Start();
 
-            this.addMessageBackgroundWorker.RunWorkerAsync();
+            this.PopulateMessages();
 
             Wrapper.socket.On("chat-message", (msg) =>
             {
@@ -141,7 +134,7 @@ namespace SocketIOChatClient
             {
                 JObject response = (JObject)ack;
 
-                if (response["success"].ToObject<bool>())
+                if (!response["success"].ToObject<bool>())
                 {
                     MessageBox.Show(response["error"].ToString());
                 }
@@ -214,34 +207,44 @@ namespace SocketIOChatClient
                 ((Wrapper)this.Parent).switchToLobby();
             }
         }
-    }
-}
 
-namespace SocketIOChatClient
-{
-    partial class Room
-    {
-        private void addMessageBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void PopulateMessages()
         {
             Wrapper.socket.Emit("request-chat-history", (ack) =>
             {
-                e.Result = (JObject)ack;
+                JObject response = (JObject)ack;
+                if (response["success"].ToObject<bool>())
+                {
+                    this.populateMessagesThread = new Thread(() => PopulateMessagesThreadSafe(response));
+                    this.populateMessagesThread.Start();
+                }
+                else
+                {
+                    MessageBox.Show(response["error"].ToString());
+                }
             }, this.room);
-            while (e.Result == null) ;
         }
 
-        private void addMessageBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void PopulateMessagesThreadSafe(JObject messages)
         {
-            JObject msg = (JObject)e.Result;
+            this.Populate(messages);
+        }
 
-            if (msg["success"].ToObject<bool>())
+        private void Populate(JObject messages)
+        {
+            if (this.InvokeRequired)
             {
-                foreach (JObject message in msg["messages"])
+                MessageDelegate deleg = new MessageDelegate(PopulateMessagesThreadSafe);
+                this.Invoke(deleg, new object[] { messages });
+            }
+            else
+            {
+                foreach (JObject message in messages["messages"])
                 {
                     MessageAppender.FormatMessage(messagesTextBox, message);
                 }
+                messagesTextBox.ScrollToCaret();
             }
-            messagesTextBox.ScrollToCaret();
         }
     }
 }

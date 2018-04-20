@@ -31,7 +31,6 @@
             this.label2 = new System.Windows.Forms.Label();
             this.messagesTextBox = new System.Windows.Forms.RichTextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.addMessageBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.statusStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -120,7 +119,7 @@
             this.tableLayoutPanel1.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
             this.tableLayoutPanel1.ColumnCount = 2;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 164F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 168F));
             this.tableLayoutPanel1.Controls.Add(this.inputTextBox, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.sendButton, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.panel2, 1, 0);
@@ -144,7 +143,7 @@
             this.inputTextBox.Margin = new System.Windows.Forms.Padding(0);
             this.inputTextBox.MaxLength = 510;
             this.inputTextBox.Name = "inputTextBox";
-            this.inputTextBox.Size = new System.Drawing.Size(468, 20);
+            this.inputTextBox.Size = new System.Drawing.Size(464, 20);
             this.inputTextBox.TabIndex = 0;
             this.inputTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.inputTextBox_KeyDown);
             // 
@@ -156,10 +155,10 @@
             this.sendButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.sendButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.sendButton.ForeColor = System.Drawing.SystemColors.MenuBar;
-            this.sendButton.Location = new System.Drawing.Point(470, 394);
+            this.sendButton.Location = new System.Drawing.Point(466, 394);
             this.sendButton.Margin = new System.Windows.Forms.Padding(0);
             this.sendButton.Name = "sendButton";
-            this.sendButton.Size = new System.Drawing.Size(164, 20);
+            this.sendButton.Size = new System.Drawing.Size(168, 20);
             this.sendButton.TabIndex = 1;
             this.sendButton.Text = "Send";
             this.sendButton.UseVisualStyleBackColor = false;
@@ -171,10 +170,10 @@
             this.panel2.Controls.Add(this.userListView);
             this.panel2.Controls.Add(this.label2);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel2.Location = new System.Drawing.Point(475, 6);
+            this.panel2.Location = new System.Drawing.Point(471, 6);
             this.panel2.Margin = new System.Windows.Forms.Padding(5);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(154, 382);
+            this.panel2.Size = new System.Drawing.Size(158, 382);
             this.panel2.TabIndex = 2;
             // 
             // userListView
@@ -227,7 +226,7 @@
             this.messagesTextBox.Name = "messagesTextBox";
             this.messagesTextBox.ReadOnly = true;
             this.messagesTextBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.messagesTextBox.Size = new System.Drawing.Size(458, 382);
+            this.messagesTextBox.Size = new System.Drawing.Size(454, 382);
             this.messagesTextBox.TabIndex = 3;
             this.messagesTextBox.Text = "";
             // 
@@ -242,11 +241,6 @@
             this.label1.Size = new System.Drawing.Size(72, 18);
             this.label1.TabIndex = 0;
             this.label1.Text = "Room Name: ";
-            // 
-            // addMessageBackgroundWorker
-            // 
-            this.addMessageBackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.addMessageBackgroundWorker_DoWork);
-            this.addMessageBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.addMessageBackgroundWorker_RunWorkerCompleted);
             // 
             // Room
             // 
@@ -288,7 +282,6 @@
         private System.Windows.Forms.Button deleteButton;
         private System.Windows.Forms.ToolStripStatusLabel statusBarLabel;
         private System.Windows.Forms.Button leaveButton;
-        private System.ComponentModel.BackgroundWorker addMessageBackgroundWorker;
         private System.Windows.Forms.RichTextBox messagesTextBox;
     }
 }

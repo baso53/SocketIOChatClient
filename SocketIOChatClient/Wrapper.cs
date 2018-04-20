@@ -23,9 +23,14 @@ namespace SocketIOChatClient
             socket.On(Socket.EVENT_RECONNECT, () =>
             {
                 this.reconnectThread = new Thread(() => ReconnectThreadSafe());
-                reconnectThread.Start();
+                this.reconnectThread.Start();
 
                 MessageBox.Show("Error communicating with server! Returning to Lobby.");
+            });
+
+            socket.On(Socket.EVENT_DISCONNECT, (msg) =>
+            {
+                MessageBox.Show(msg.ToString());
             });
             
         }

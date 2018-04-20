@@ -17,9 +17,6 @@
         {
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusBarLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.requestRoomListBackgroundWorker = new System.ComponentModel.BackgroundWorker();
-            this.addRoomBackgroundWorker = new System.ComponentModel.BackgroundWorker();
-            this.switchToRoomBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.roomListView = new System.Windows.Forms.ListView();
             this.ID = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.RoomName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -45,21 +42,6 @@
             this.statusBarLabel.Name = "statusBarLabel";
             this.statusBarLabel.Size = new System.Drawing.Size(88, 17);
             this.statusBarLabel.Text = "Not Connected";
-            // 
-            // requestRoomListBackgroundWorker
-            // 
-            //this.requestRoomListBackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.requestRoomListBackgroundWorker_DoWork);
-            //this.requestRoomListBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.requestRoomListBackgroundWorker_RunWorkerCompleted);
-            // 
-            // addRoomBackgroundWorker
-            // 
-            this.addRoomBackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.addRoomBackgroundWorker_DoWork);
-            this.addRoomBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.addRoomBackgroundWorker_RunWorkerCompleted);
-            // 
-            // switchToRoomBackgroundWorker
-            // 
-            this.switchToRoomBackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.switchToRoomBackgroundWorker_DoWork);
-            this.switchToRoomBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.switchToRoomBackgroundWorker_RunWorkerCompleted);
             // 
             // roomListView
             // 
@@ -129,10 +111,7 @@
         #endregion
 
         private System.Windows.Forms.StatusStrip statusStrip1;
-        private System.ComponentModel.BackgroundWorker requestRoomListBackgroundWorker;
         private System.Windows.Forms.ToolStripStatusLabel statusBarLabel;
-        private System.ComponentModel.BackgroundWorker addRoomBackgroundWorker;
-        private System.ComponentModel.BackgroundWorker switchToRoomBackgroundWorker;
         private System.Windows.Forms.ListView roomListView;
         private System.Windows.Forms.ColumnHeader ID;
         private System.Windows.Forms.ColumnHeader RoomName;
