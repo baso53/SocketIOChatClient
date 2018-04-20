@@ -1,5 +1,6 @@
 # Socket IO Chat client
 ======================
+
 This is a simple chat client for Windows built for .NET 4.7 using WinForms and C#. Chat communication 
 is done through socket.io, which is an open-source Javascript real-time messaging framework. 
 Client is connected to a central server hosted on Azure Web Services, written in Node.js. 
