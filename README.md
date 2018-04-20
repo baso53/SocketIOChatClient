@@ -25,12 +25,14 @@ See also: [Releases](https://github.com/baso53/SocketIOChatClient/releases)
 * Creating chat rooms
 * Deleting a chat room with master password set on creation of the room
 * Real-time updating of connected users in the lobby and in rooms
+* Usernames
 
 # Implementation
 Client API representation can be found below.
 
 Squares on the left are the request strings that client sends, right 
-is the response from the server in JSON (I didn't include the outer brackets of JSON).
+are all the potential responses from the server in JSON (I didn't include the outer brackets of JSON), 
+only one of which gets sent as the response.
 
 ![ClientAPI](Pictures/ClientAPI.png)
 
